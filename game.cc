@@ -2,10 +2,11 @@
 #include "point.h"
 #include "game.h"
 #include "stage.h"
+#include <cstdlib>
 #include <vector>
 
 Game::Game(Stage& S)
-    : snake(), stage(S), score(4, 0), direction({-1, 0}), timer(0)
+    : snake(), stage(S), score(4, 0), direction({-1, 0}), timer(0), itemCnt(2, 0)
 {
 }
 
@@ -74,8 +75,12 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
 
         case mapTile::Growth:
             isGrowth = true;
+            itemCnt[0] -= 1;
+            break;
         case mapTile::Poison:
             if(snake.cut() < 3) return gameStatus::Lose;
+            itemCnt[1] -= 1;
+            break;
         case mapTile::None:
             break;
 
@@ -115,5 +120,25 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
 
 void Game::update(){
     //item 등장
+    if(itemCnt[0] <= 3){
+        int x, y;
+        do{
+        x = rand() % stage.getMapSize();
+        y = rand() % stage.getMapSize();
+        }while(stage.getMap(x, y) == mapTile::None);
+        stage.setMap(x, y, mapTile::Growth);
+        itemCnt[0] += 1;
+    }
+
+    if(itemCnt[1] <= 3){
+        int x, y;
+        do{
+        x = rand() % stage.getMapSize();
+        y = rand() % stage.getMapSize();
+        }while(stage.getMap(x, y) == mapTile::None);
+        stage.setMap(x, y, mapTile::Poison);
+        itemCnt[1] += 1;
+    }
     //portal 등장
+
 }

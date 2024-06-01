@@ -19,9 +19,9 @@ class Game{
         void update();
         static bool checkVaild(mapTile tile);
         static pair<int, int> turnDir(const pair<int, int>& dir, int cnt);
+        vector<int> itemCnt;
 
     public:
-        Game();
         Game(Stage&);
         gameStatus tick(pair<int, int> input, long long timestamp);
         const vector<vector<mapTile>>& getEntireMap();

@@ -14,4 +14,5 @@ class Stage{
         const pair<point, point>& getGate();
         const int checkEdge(int x, int y); //not edge 0, up 1, right 2, down 3, left 4
         void createGate(int x1, int y1, int x2, int y2);
+        int getMapSize();
 };
