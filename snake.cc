@@ -22,32 +22,32 @@ Snake::Snake(Map& m) {
 }
 
 /*각 요소의 위치를 머리-꼬리 순서를 백터로*/
-const vector<point>& getSnake() {
+const vector<point>& Snake::getSnake() const {
     return Snake;
 }
 
 /*snake 머리 위치*/
-const point& getHead() {
+const point& Snake::getHead() const {
     return Snake[0];
 }
 
 /*snake 길이*/
-int len() {
+int Snake::len() const {
     return Snake.size();
 }
 
 /*snake max길이*/
-int getmaxlen() {
+int Snake::getMaxLen() const {
     return maxlen;
 }
 
-void setmaxlen() {
+void Snake::setMaxLen() {
     if (len() > maxlen) {
         maxlen = len();
 }
 
 /*이동, isGrowth가 참이면 +1*/
-int moveTo(int x, int y, bool isGrowth) {
+int Snake::moveTo(int x, int y, bool isGrowth) {
     len.insert(len.begin(), point(x, y));
     if (!isGrowth) {
         Snake.pop_back();
@@ -56,7 +56,7 @@ int moveTo(int x, int y, bool isGrowth) {
 }
 
 /*snake 줄어듦*/
-int cut() {
+int Snake::cut() {
     if (!Snake.empty()) {
         Snake.pop_back();
     }
@@ -64,7 +64,7 @@ int cut() {
 }
 
 /*x,y위치에 snake가 있는지*/
-bool isSnake(int x, int y) {
+bool Snake::isSnake(int x, int y) const {
     for (const auto& pos : Snake) {
         if (pos.x == x && pos.y == y) {
             return true;
