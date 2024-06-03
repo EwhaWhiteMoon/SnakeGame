@@ -1,74 +1,49 @@
-#include <iostream>
 #include <vector>
-#include "Snake.h"
+#include "Stage.h"
 
-POSITION::POSITION(int row, int col) {
-    x = col;
-    y = row;
-}
-
-POSITION::POSITION() {
-    x = 0;
-    y = 0;
-}
-
-bool POSITION::operator==(POSITION p) {
-    return ((x == p.x) && (y == p.y));
-}
-
-Snake::Snake(Map& m) {
-    direction = 'l';
-    maxlen = 3;
-}
-
-/*각 요소의 위치를 머리-꼬리 순서를 백터로*/
-const vector<point>& Snake::getSnake() const {
-    return Snake;
-}
-
-/*snake 머리 위치*/
-const point& Snake::getHead() const {
-    return Snake[0];
-}
-
-/*snake 길이*/
-int Snake::len() const {
-    return Snake.size();
-}
-
-/*snake max길이*/
-int Snake::getMaxLen() const {
-    return maxlen;
-}
-
-void Snake::setMaxLen() {
-    if (len() > maxlen) {
-        maxlen = len();
-}
-
-/*이동, isGrowth가 참이면 +1*/
-int Snake::moveTo(int x, int y, bool isGrowth) {
-    len.insert(len.begin(), point(x, y));
-    if (!isGrowth) {
-        Snake.pop_back();
+/*x, y 반환*/ 
+mapTile Stage::getMap(int x, int y) {
+    if (x >= 0 && x < map[0].size() && y >= 0 && y < map.size()) {
+        return map[y][x];
     }
-    return Snake.size();
+    return mapTile::inVaild;
 }
 
-/*snake 줄어듦*/
-int Snake::cut() {
-    if (!Snake.empty()) {
-        Snake.pop_back();
+/*x, y 요소 설정*/ 
+void Stage::setMap(int x, int y, mapTile data) {
+    if (x >= 0 && x < map[0].size() && y >= 0 && y < map.size()) {
+        map[y][x] = data;
     }
-    return Snake.size();
 }
 
-/*x,y위치에 snake가 있는지*/
-bool Snake::isSnake(int x, int y) const {
-    for (const auto& pos : Snake) {
-        if (pos.x == x && pos.y == y) {
-            return true;
-        }
-    }
-    return false;
+/*맵 전체 백터 반환*/
+const vector<vector<mapTile>>& Stage::getEntireMap() {
+    return map;
+}
+
+/*스테이지 목표를 vector로 반환*/ 
+const vector<int>& Stage::getGoal() {
+    return goal;
+}
+
+/*존재하는 gate위치 반환*/ 
+const pair<point, point>& Stage::getGate() {
+    return gate;
+}
+
+/*특정 좌표가 모서리에 위치하는지 확인, 어느모서리에 위치하는지 반환*/ 
+const int checkEdge(int x, int y);
+const int Stage::checkEdge(int x, int y) {
+    if (x == 0) return 4; 
+    if (x == map[0].size() - 1) return 2; 
+    if (y == 0) return 1; // Top edge
+    if (y == map.size() - 1) return 3; 
+    return 0; 
+}
+
+/*꼭짓점에 위치하는 경우는 0 이외 어느 값을 반환해도 됨*/
+void Stage::createGate(int x1, int y1, int x2, int y2) {
+    gate = { point(x1, y1), point(x2, y2) };
+    setMap(x1, y1, mapTile::Portal);
+    setMap(x2, y2, mapTile::Portal);
 }
