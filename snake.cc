@@ -1,5 +1,7 @@
 #include <vector>
 #include "Snake.h"
+#include "enums.h"
+#include "point.h"
 
 Snake::Snake(Map& m) {
     direction = 'l';
