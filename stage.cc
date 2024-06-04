@@ -1,5 +1,12 @@
 #include <vector>
 #include "Stage.h"
+#include "enums.h"
+#include "point.h"
+
+
+Stage::Stage() {}
+
+Stage::Stage(int map) {}
 
 /*x, y 반환*/ 
 mapTile Stage::getMap(int x, int y) {
@@ -9,7 +16,7 @@ mapTile Stage::getMap(int x, int y) {
     return mapTile::inVaild;
 }
 
-/*x, y 요소 설정*/ 
+/*x, y 요소 설정*/
 void Stage::setMap(int x, int y, mapTile data) {
     if (x >= 0 && x < map[0].size() && y >= 0 && y < map.size()) {
         map[y][x] = data;
@@ -26,17 +33,16 @@ const vector<int>& Stage::getGoal() {
     return goal;
 }
 
-/*존재하는 gate위치 반환*/ 
+/*존재하는 gate위치 반환*/
 const pair<point, point>& Stage::getGate() {
     return gate;
 }
 
 /*특정 좌표가 모서리에 위치하는지 확인, 어느모서리에 위치하는지 반환*/ 
-const int checkEdge(int x, int y);
 const int Stage::checkEdge(int x, int y) {
-    if (x == 0) return 4; 
-    if (x == map[0].size() - 1) return 2; 
-    if (y == 0) return 1; // Top edge
+    if (x == 0) return 4;
+    if (x == map[0].size() - 1) return 2;
+    if (y == 0) return 1; 
     if (y == map.size() - 1) return 3; 
     return 0; 
 }
