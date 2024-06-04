@@ -87,7 +87,7 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
         case mapTile::None:
             break;
 
-        case mapTile::Portal:
+        case mapTile::Portal:{
             auto gates = stage.getGate();
             if(!gates.has_value()) return gameStatus::Err;
             auto [a, b] = gates.value();
@@ -113,8 +113,9 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
             }
             cur.x += direction.first;
             cur.y += direction.second;
-            score[3] += 1;
+            score[3] += 1;}
             break;
+
         case mapTile::inVaild:
             return gameStatus::Err;
     }

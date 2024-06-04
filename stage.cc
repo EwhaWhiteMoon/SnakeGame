@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include "Stage.h"
+#include "stage.h"
 #include "enums.h"
 #include "point.h"
 

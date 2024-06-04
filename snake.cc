@@ -1,9 +1,8 @@
 #include <vector>
-#include "Snake.h"
-#include "enums.h"
+#include "snake.h"
 #include "point.h"
 
-Snake::Snake(int x, int y, int len = 3)
+Snake::Snake(int x, int y, int len)
     : body(), length(len)
 {
     body.push_back(point(x, y));
@@ -11,7 +10,8 @@ Snake::Snake(int x, int y, int len = 3)
 
 const vector<point> &Snake::getSnake()
 {
-    return {body.begin(), body.end()};
+    vector<point>* s = new vector<point>(body.begin(), body.end());
+    return *s;
 }
 
 const point &Snake::getHead()
