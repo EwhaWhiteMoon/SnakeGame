@@ -2,11 +2,13 @@
 #include "point.h"
 #include "game.h"
 #include "stage.h"
+#include <optional>
 #include <cstdlib>
 #include <vector>
+#include <algorithm>
 
 Game::Game(Stage& S)
-    : snake(), stage(S), score(4, 0), direction({-1, 0}), timer(0), itemCnt(2, 0)
+    : snake(S.getMapSize() / 2, S.getMapSize() / 2), stage(S), score(4, 0), direction({-1, 0}), timer(0), itemCnt(2, 0)
 {
 }
 
@@ -31,7 +33,7 @@ const vector<bool>& Game::getDone(){
 }
 
 bool Game::checkVaild(mapTile tile){
-    return tile != mapTile::Wall and tile != mapTile::IWall and tile != mapTile::inVaild;
+    return tile != mapTile::Wall && tile != mapTile::IWall && tile != mapTile::inVaild;
 }
 
 pair<int, int> Game::turnDir(const pair<int, int>& dir, int cnt){
@@ -56,7 +58,7 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
                                              // (다음 timer 이벤트가 일어나지 않음)
     }
 
-    if(input.first == 0 and input.second == 0) direction = input;
+    if(input.first == 0 && input.second == 0) direction = input;
     
     // Movement
     point cur = snake.getHead();
@@ -69,23 +71,26 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
     switch (stage.getMap(cur.x, cur.y)) {
         case mapTile::Wall:
         case mapTile::IWall:
-        case mapTile::inVaild:
         case mapTile::Snake:
             return gameStatus::Lose;
 
         case mapTile::Growth:
             isGrowth = true;
             itemCnt[0] -= 1;
+            score[1] += 1;
             break;
         case mapTile::Poison:
             if(snake.cut() < 3) return gameStatus::Lose;
             itemCnt[1] -= 1;
+            score[2] += 1;
             break;
         case mapTile::None:
             break;
 
         case mapTile::Portal:
-            auto [a, b] = stage.getGate();
+            auto gates = stage.getGate();
+            if(!gates.has_value()) return gameStatus::Err;
+            auto [a, b] = gates.value();
             if(cur.x == a.x) cur = b;
             else cur = a;
             
@@ -108,10 +113,18 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
             }
             cur.x += direction.first;
             cur.y += direction.second;
+            score[3] += 1;
             break;
+        case mapTile::inVaild:
+            return gameStatus::Err;
     }
     snake.moveTo(cur.x, cur.y, isGrowth);
     stage.setMap(cur.x, cur.y, mapTile::None); //새 머리가 들어갈 자리는 무조건 비어있음.
+
+    score[0] = snake.len();
+    auto done = getDone();
+    if(all_of(done.begin(), done.end(), [](bool i){return i;}))
+        return gameStatus::Win;
 
     update();
 
@@ -140,5 +153,16 @@ void Game::update(){
         itemCnt[1] += 1;
     }
     //portal 등장
+    if(timer > 10 && timer % 5 == 0 && !snake.isConnected()){
+        int x1, y1, x2, y2;
+        do{
+        x1 = rand() % stage.getMapSize();
+        y1 = rand() % stage.getMapSize();
+        x2 = rand() % stage.getMapSize();
+        y2 = rand() % stage.getMapSize();
+        }while(stage.getMap(x1, y1) == mapTile::Wall &&
+                stage.getMap(x2, y2) == mapTile::Wall);
 
+        stage.createGate(x1, y1, x2, y2);
+    }
 }

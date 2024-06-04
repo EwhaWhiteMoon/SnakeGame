@@ -3,61 +3,61 @@
 #include "enums.h"
 #include "point.h"
 
-Snake::Snake(Map& m) {
-    direction = 'l';
-    maxlen = 3;
+Snake::Snake(int x, int y, int len = 3)
+    : body(), length(len)
+{
+    body.push_back(point(x, y));
 }
 
-/*각 요소의 위치를 머리-꼬리 순서를 백터로*/
-const vector<point>& Snake::getSnake() {
-    return Snake;
+const vector<point> &Snake::getSnake()
+{
+    return {body.begin(), body.end()};
 }
 
-/*snake 머리 위치*/
-const point& Snake::getHead() {
-    return Snake[0];
+const point &Snake::getHead()
+{
+    return body.back();
 }
 
-/*snake 길이*/
-int Snake::len() {
-    return Snake.size();
+const point &Snake::getTail()
+{
+    return body.front();
 }
 
-/*snake max길이*/
-int Snake::getMaxLen() {
-    return maxlen;
+bool Snake::isSnake(int x, int y)
+{
+    for(point p: body)
+        if(p.x == x && p.y == y)
+            return true;
+
+    return false;
 }
 
-void Snake::setMaxLen() {
-    if (len() > maxlen) {
-        maxlen = len();
+int Snake::len()
+{
+    return length;
 }
 
-/*이동, isGrowth가 참이면 +1*/
-int Snake::moveTo(int x, int y, bool isGrowth) {
-    Snake[0].x = x;
-    Snake[0].y = y;
-    if (isGrowth) {
-        Snake[Snake.size() + 1].x = x;
-        Snake[Snake.size() + 1].y = y;
-    }
+int Snake::moveTo(int x, int y, bool isGrowth)
+{
+    body.push_back(point(x, y));
+    if(!isGrowth) length += 1;
+    if(!isGrowth || body.size() < length) cut();
     return len();
 }
 
-/*snake 줄어듦*/
-int Snake::cut() {
-    Snake[Snake.size() + 1].x;
-    Snake[Snake.size() + 1].y;
-    Snake.pop_back();
+int Snake::cut()
+{
+    body.pop_front();
+    length -= 1;
     return len();
 }
 
-/*x,y위치에 snake가 있는지*/
-bool isSnake(int x, int y) {
-    if (isSnake(x, y)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+bool Snake::isConnected()
+{
+    point cur = getTail();
+    for(point p: body)
+        if((cur.x - p.x) + (cur.y - cur.y) != 1)
+            return false;
+    return true;
 }

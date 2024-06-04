@@ -1,55 +1,100 @@
+#pragma once
+
 #include <vector>
+#include <string>
+#include <fstream>
 #include "Stage.h"
 #include "enums.h"
 #include "point.h"
 
+using namespace std;
 
-Stage::Stage() {}
-
-Stage::Stage(int map) {}
-
-/*x, y 반환*/ 
-mapTile Stage::getMap(int x, int y) {
-    if (x >= 0 && x < map[0].size() && y >= 0 && y < map.size()) {
-        return map[y][x];
-    }
-    return mapTile::inVaild;
+Stage::Stage(int size, vector<int> goals)
+    :map(size, vector<mapTile>(size, mapTile::None)), goal(goals), gate(nullopt), size(size)
+{
 }
 
-/*x, y 요소 설정*/
-void Stage::setMap(int x, int y, mapTile data) {
-    if (x >= 0 && x < map[0].size() && y >= 0 && y < map.size()) {
-        map[y][x] = data;
+Stage::Stage(string fileName)
+{
+    ifstream mapFile;
+    mapFile.open(fileName, ios_base::in);
+    if(!mapFile.is_open()){
+        //예외처리
     }
+    int size;
+    vector<int> goals(4, 0);
+
+    mapFile >> size;
+    mapFile >> goals[0] >> goals[1] >> goals[2] >> goals[3];
+    Stage(size, goals);
+
+    for(int i = 0; i < size; i++){
+        for(int j = 0; j < size; j++){
+            int tile;
+            mapFile >> tile;
+            map[i][j] = (mapTile)tile;
+        }
+    }
+    
+
+    mapFile.close();
 }
 
-/*맵 전체 백터 반환*/
-const vector<vector<mapTile>>& Stage::getEntireMap() {
+mapTile Stage::getMap(int x, int y)
+{
+    //예외처리 추가하면 좋음
+    return map[x][y];
+}
+
+void Stage::setMap(int x, int y, mapTile data)
+{   
+    map[x][y] = data;
+}
+
+const vector<vector<mapTile>> &Stage::getEntireMap()
+{
     return map;
 }
 
-/*스테이지 목표를 vector로 반환*/ 
-const vector<int>& Stage::getGoal() {
+const vector<int> &Stage::getGoal()
+{
     return goal;
 }
 
-/*존재하는 gate위치 반환*/
-const pair<point, point>& Stage::getGate() {
+const optional<pair<point, point>> &Stage::getGate()
+{
     return gate;
 }
 
-/*특정 좌표가 모서리에 위치하는지 확인, 어느모서리에 위치하는지 반환*/ 
-const int Stage::checkEdge(int x, int y) {
-    if (x == 0) return 4;
-    if (x == map[0].size() - 1) return 2;
-    if (y == 0) return 1; 
-    if (y == map.size() - 1) return 3; 
+const int Stage::checkEdge(int x, int y) //not edge 0, up 1, right 2, down 3, left 4
+{
+    if (x == 0) return 1;
+    if (x == map[0].size() - 1) return 3;
+    if (y == 0) return 4; 
+    if (y == map.size() - 1) return 2; 
     return 0; 
 }
 
-/*꼭짓점에 위치하는 경우는 0 이외 어느 값을 반환해도 됨*/
-void Stage::createGate(int x1, int y1, int x2, int y2) {
-    gate = { point(x1, y1), point(x2, y2) };
-    setMap(x1, y1, mapTile::Portal);
-    setMap(x2, y2, mapTile::Portal);
+void Stage::removeGate()
+{
+    if(!gate.has_value()) return;
+    auto [a, b] = gate.value();
+    setMap(a.x, a.y, mapTile::Wall);
+    setMap(b.x, b.y, mapTile::Wall);
+    gate = nullopt;
+}
+
+void Stage::createGate(int x1, int y1, int x2, int y2)
+{
+    removeGate();
+    point a = point(x1, y1);
+    point b = point(x2, y2);
+    setMap(a.x, a.y, mapTile::Portal);
+    setMap(b.x, b.y, mapTile::Portal);
+    gate = pair<point, point>(a, b);
+}
+
+int Stage::getMapSize()
+{
+    return size;
 }
