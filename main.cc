@@ -1,10 +1,10 @@
+#include <cstdlib>
 #include <ncurses.h>
+#include <system_error>
 #include <vector>
 #include <chrono>
 #include "game.h"
 #include "stage.h"
-#include "snake.h"
-#include "point.h"
 #include "enums.h"
 
 // 점수 보드를 출력하는 함수
@@ -41,10 +41,11 @@ int main()
     noecho();
     cbreak();
     curs_set(FALSE);
-    timeout(100); // 100 ms 딜레이로 getch() 비동기 입력
 
     // 키패드 활성화
     keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE); //getch가 non-blocking으로 실행되도록 함
+
 
     // 지도와 점수 보드를 위한 창 생성
     int mapHeight = 21;
@@ -54,12 +55,15 @@ int main()
     WINDOW *scoreWin = newwin(mapHeight, scoreBoardWidth, 0, mapWidth + 1);
 
     // 게임 초기화
-    Stage stage("SnakeGameProject/stage.cc"); // 스테이지 파일 경로
+    Stage stage("blankmap.txt"); // 스테이지 파일 경로
     Game game(stage);
 
     // 메인 게임 루프
     bool running = true;
     auto lastTick = std::chrono::steady_clock::now();
+
+    // rand 초기화
+    srand((unsigned int)lastTick.time_since_epoch().count());
 
     while (running)
     {
@@ -87,32 +91,28 @@ int main()
 
         auto now = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTick).count();
-        if (duration >= 500)
-        { // 500 ms마다 틱
-            auto status = game.tick({dx, dy}, duration);
-            lastTick = now;
+        auto status = game.tick({dy, dx}, duration);
 
-            // 게임 상태 확인
-            if (status == gameStatus::Lose)
-            {
-                mvprintw(mapHeight + 1, 0, "Game Over! Press 'q' to quit.");
-                refresh();
-                running = false;
-            }
-            else if (status == gameStatus::Win)
-            {
-                mvprintw(mapHeight + 1, 0, "Stage Complete! Press 'q' to quit.");
-                refresh();
-                running = false;
-            }
+        // 게임 상태 확인
+        if (status == gameStatus::Lose)
+        {
+            mvprintw(mapHeight + 1, 0, "Game Over! Press any key to quit");
+            refresh();
+            running = false;
+        }
+        else if (status == gameStatus::Win)
+        {
+            mvprintw(mapHeight + 1, 0, "Stage Complete! Press any key to quit.");
+            refresh();
+            running = false;
         }
 
         // 지도 렌더링
         werase(mapWin);
         const auto &map = game.getEntireMap();
-        for (int y = 0; y < map.size(); ++y)
-        {
-            for (int x = 0; x < map[y].size(); ++x)
+        for (int x = 0; x < map.size(); ++x)
+       {
+            for (int y = 0; y < map[x].size(); ++y)
             {
                 switch (map[y][x])
                 {
@@ -129,16 +129,22 @@ int main()
                     mvwprintw(mapWin, y, x, "O");
                     break;
                 case mapTile::Growth:
-                    mvwprintw(mapWin, y, x, "G");
+                    mvwprintw(mapWin, y, x, "+");
                     break;
                 case mapTile::Poison:
-                    mvwprintw(mapWin, y, x, "P");
+                    mvwprintw(mapWin, y, x, "-");
                     break;
                 case mapTile::Portal:
                     mvwprintw(mapWin, y, x, "A");
                     break;
+                case mapTile::inVaild:
+                    mvwprintw(mapWin, y, x, "X");
                 }
             }
+        }
+
+        for(auto i: game.getSnake()){
+            mvwprintw(mapWin, i.x, i.y, "@");
         }
         wrefresh(mapWin);
 
@@ -147,6 +153,7 @@ int main()
     }
 
     // 정리
+    while(getch() == -1);
     delwin(mapWin);
     delwin(scoreWin);
     endwin();

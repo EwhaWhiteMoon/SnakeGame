@@ -8,7 +8,7 @@
 #include <algorithm>
 
 Game::Game(Stage& S)
-    : snake(S.getMapSize() / 2, S.getMapSize() / 2), stage(S), score(4, 0), direction({-1, 0}), timer(0), itemCnt(2, 0)
+    : snake(S.getMapSize() / 2, S.getMapSize() / 2), stage(S), score(4, 0), direction({-1, 0}), timer(0), itemCnt(2, 0), gateTimer(0)
 {
 }
 
@@ -50,15 +50,16 @@ pair<int, int> Game::turnDir(const pair<int, int>& dir, int cnt){
 
 gameStatus Game::tick(pair<int, int> input, long long timestamp){
 
-    if(timer < (timestamp / __MS_PER_TICK__)) timer += 1; // 다음 timer로 넘어갈 만큼 시간이 지났을 경우
-    else if(input == pair<int, int>({0 ,0})){
+    if(timer < (timestamp / __MS_PER_TICK__)){
+        timer += 1; // 다음 timer로 넘어갈 만큼 시간이 지났을 경우
+    }else if(input == pair<int, int>({0 ,0})){
         return gameStatus::Progress; // 시간이 충분히 지나지 않았고 입력이 없을 경우
     }else{
         timer = timestamp / __MS_PER_TICK__; // 시간이 충분히 지나기 전에 입력이 들어왔다면, 시간이 지난 걸로 취급
-                                             // (다음 timer 이벤트가 일어나지 않음)
+        timer += 1;                          // (다음 timer 이벤트가 일어나지 않음)
     }
 
-    if(input.first == 0 && input.second == 0) direction = input;
+    if(input.first != 0 || input.second != 0) direction = input;
     
     // Movement
     point cur = snake.getHead();
@@ -94,7 +95,7 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
             if(cur.x == a.x) cur = b;
             else cur = a;
             
-            int edge = stage.checkEdge(a.x, a.y);
+            int edge = stage.checkEdge(cur.x, cur.y);
 
             if(edge != 0){
                 switch (edge) {
@@ -107,7 +108,7 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
                 pair<int, int> startDir = direction;
                 int cnt = 0;
                 int turn[] = {1, -1, 2};
-                while(checkVaild(stage.getMap(cur.x + direction.first, cur.y + direction.second))){
+                while(!checkVaild(stage.getMap(cur.x + direction.first, cur.y + direction.second))){
                     direction = turnDir(startDir, turn[cnt ++]);
                 }
             }
@@ -139,7 +140,7 @@ void Game::update(){
         do{
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
-        }while(stage.getMap(x, y) == mapTile::None);
+        }while(stage.getMap(x, y) != mapTile::None);
         stage.setMap(x, y, mapTile::Growth);
         itemCnt[0] += 1;
     }
@@ -149,21 +150,22 @@ void Game::update(){
         do{
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
-        }while(stage.getMap(x, y) == mapTile::None);
+        }while(stage.getMap(x, y) != mapTile::None);
         stage.setMap(x, y, mapTile::Poison);
         itemCnt[1] += 1;
     }
     //portal 등장
-    if(timer > 10 && timer % 5 == 0 && !snake.isConnected()){
+    if((timer - gateTimer) > 5 && snake.isConnected()){
         int x1, y1, x2, y2;
         do{
         x1 = rand() % stage.getMapSize();
         y1 = rand() % stage.getMapSize();
         x2 = rand() % stage.getMapSize();
         y2 = rand() % stage.getMapSize();
-        }while(stage.getMap(x1, y1) == mapTile::Wall &&
-                stage.getMap(x2, y2) == mapTile::Wall);
+        }while(stage.getMap(x1, y1) != mapTile::Wall ||
+                stage.getMap(x2, y2) != mapTile::Wall);
 
         stage.createGate(x1, y1, x2, y2);
+        gateTimer = timer;
     }
 }

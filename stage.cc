@@ -1,5 +1,3 @@
-#pragma once
-
 #include <vector>
 #include <string>
 #include <fstream>
@@ -14,19 +12,17 @@ Stage::Stage(int size, vector<int> goals)
 {
 }
 
-Stage::Stage(string fileName)
+Stage::Stage(string fileName) : goal(4, 0), gate(nullopt)
 {
     ifstream mapFile;
     mapFile.open(fileName, ios_base::in);
     if(!mapFile.is_open()){
         //예외처리
     }
-    int size;
-    vector<int> goals(4, 0);
 
     mapFile >> size;
-    mapFile >> goals[0] >> goals[1] >> goals[2] >> goals[3];
-    Stage(size, goals);
+    mapFile >> goal[0] >> goal[1] >> goal[2] >> goal[3];
+    map = vector<vector<mapTile>>(size, vector<mapTile>(size, mapTile::None));
 
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){

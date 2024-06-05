@@ -41,8 +41,8 @@ int Snake::len()
 int Snake::moveTo(int x, int y, bool isGrowth)
 {
     body.push_back(point(x, y));
-    if(!isGrowth) length += 1;
-    if(!isGrowth || body.size() < length) cut();
+    if(isGrowth) length += 1;
+    if(body.size() > length) body.pop_front();
     return len();
 }
 
@@ -56,8 +56,11 @@ int Snake::cut()
 bool Snake::isConnected()
 {
     point cur = getTail();
-    for(point p: body)
-        if((cur.x - p.x) + (cur.y - cur.y) != 1)
+    for(point p: body){
+        if(abs(cur.x - p.x) + abs(cur.y - cur.y) > 1)
             return false;
+        cur.x = p.x;
+        cur.y = p.y;
+    }
     return true;
 }

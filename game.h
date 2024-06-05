@@ -20,6 +20,7 @@ class Game{
         static bool checkVaild(mapTile tile);
         static pair<int, int> turnDir(const pair<int, int>& dir, int cnt);
         vector<int> itemCnt;
+        int gateTimer;
 
     public:
         Game(Stage&);
