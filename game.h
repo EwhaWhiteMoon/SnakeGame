@@ -7,8 +7,6 @@
 #include <utility>
 #include <vector>
 
-#define __MS_PER_TICK__ 1000
-
 class Game{
     private:
         Snake snake;
@@ -21,9 +19,10 @@ class Game{
         static bool checkVaild(mapTile tile);
         static pair<int, int> turnDir(const pair<int, int>& dir, int cnt);
         int gateTimer;
+        int gameSpeed;
 
     public:
-        Game(Stage&);
+        Game(Stage&, int speed = 500);
         gameStatus tick(pair<int, int> input, long long timestamp);
         const vector<vector<mapTile>>& getEntireMap();
         const vector<point>& getSnake();

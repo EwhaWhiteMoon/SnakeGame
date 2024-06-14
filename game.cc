@@ -7,10 +7,10 @@
 #include <vector>
 #include <algorithm>
 
-Game::Game(Stage& S)
+Game::Game(Stage& S, int speed)
     : snake(S.getMapSize() / 2, S.getMapSize() / 2), 
     stage(S), score(4, 0), direction({-1, 0}), 
-    timer(0), gateTimer(0), last_updated(0)
+    timer(0), gateTimer(0), last_updated(0), gameSpeed(speed)
 {
 }
 
@@ -52,12 +52,12 @@ pair<int, int> Game::turnDir(const pair<int, int>& dir, int cnt){
 
 gameStatus Game::tick(pair<int, int> input, long long timestamp){
 
-    if(timer < (timestamp / __MS_PER_TICK__)){
+    if(timer < (timestamp / gameSpeed)){
         timer += 1; // 다음 timer로 넘어갈 만큼 시간이 지났을 경우
-    }else if(input == pair<int, int>({0 ,0})){
+    }else if(input == pair<int, int>({0 ,0}) or input == direction){
         return gameStatus::Progress; // 시간이 충분히 지나지 않았고 입력이 없을 경우
     }else{
-        timer = timestamp / __MS_PER_TICK__; // 시간이 충분히 지나기 전에 입력이 들어왔다면, 시간이 지난 걸로 취급
+        timer = timestamp / gameSpeed; 
         timer += 1;                          // (다음 timer 이벤트가 일어나지 않음)
     }
 
@@ -143,7 +143,7 @@ void Game::update(){
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
         if(snake.isSnake(x, y)) continue;
-        }while(!stage.addItem(x, y, mapTile::Growth, timer + 4));
+        }while(!stage.addItem(x, y, mapTile::Growth, timer + (5000 / gameSpeed)));
     }
 
     if(stage.countItem(mapTile::Poison) < 3){
@@ -152,12 +152,12 @@ void Game::update(){
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
         if(snake.isSnake(x, y)) continue;
-        }while(!stage.addItem(x, y, mapTile::Poison, timer + 4));
+        }while(!stage.addItem(x, y, mapTile::Poison, timer + (5000 / gameSpeed)));
     }
 
     stage.itemTick(timer);
     //portal 등장
-    if((timer - gateTimer) > 5 && snake.isConnected()){
+    if((timer - gateTimer) > (5000 / gameSpeed) && snake.isConnected()){
         int x1, y1, x2, y2;
         do{
         x1 = rand() % stage.getMapSize();
