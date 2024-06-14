@@ -19,10 +19,10 @@ class Stage{
         mapTile getMap(int x, int y);
         void setMap(int x, int y, mapTile data);
 
-        bool addItem(int x, int y, mapTile item, int time);
+        bool addItem(int x, int y, mapTile item, long long time);
         int countItem(mapTile item);
         void removeItem(int x, int y);
-        void itemTick(int time);
+        void itemTick(long long time);
 
         const vector<vector<mapTile>>& getEntireMap();
         const vector<int>& getGoal();

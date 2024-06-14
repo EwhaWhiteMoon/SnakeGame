@@ -40,7 +40,7 @@ Stage::Stage(string fileName) : goal(4, 0), gate(nullopt)
 
 mapTile Stage::getMap(int x, int y)
 {
-    if(0 <= x && x < size && y <= x && y < size)
+    if(0 <= x && x < size && 0 <= y && y < size)
         return map[x][y];
     else return mapTile::inVaild;
 }
@@ -66,7 +66,7 @@ void Stage::removeItem(int x, int y)
     }
 }
 
-bool Stage::addItem(int x, int y, mapTile item, int time)
+bool Stage::addItem(int x, int y, mapTile item, long long time)
 {
     if(getMap(x, y) != mapTile::None) return false;
     
@@ -75,7 +75,7 @@ bool Stage::addItem(int x, int y, mapTile item, int time)
     return true;
 }
 
-void Stage::itemTick(int time)
+void Stage::itemTick(long long time)
 {
     for (auto it = itemSet.begin(); it != itemSet.end();) {
         if (it->time < time){

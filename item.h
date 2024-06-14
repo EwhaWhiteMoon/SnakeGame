@@ -10,7 +10,7 @@ class Item{
     public:
         point pos;
         mapTile itemType;
-        int time;
+        long long time;
         Item(int x, int y, mapTile type, int time) : pos(x, y), itemType(type), time(time){
         }
         bool operator<(const Item& i) const{
