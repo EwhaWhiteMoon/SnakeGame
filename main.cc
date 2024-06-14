@@ -20,7 +20,7 @@ void displayScoreBoard(WINDOW *scoreWin, Game &game)
     auto &points = game.getPoint();
     auto &done = game.getDone();
 
-    mvwprintw(scoreWin, startY + 2, startX, "B: %d / %d", points[0], goals[0]);
+    mvwprintw(scoreWin, startY + 2, startX, "B: %d / %d", game.getSnake().size(), points[0]);
     mvwprintw(scoreWin, startY + 3, startX, "+: %d", points[1]);
     mvwprintw(scoreWin, startY + 4, startX, "-: %d", points[2]);
     mvwprintw(scoreWin, startY + 5, startX, "G: %d", points[3]);

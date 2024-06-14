@@ -123,7 +123,7 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
     snake.moveTo(cur.x, cur.y, isGrowth);
     stage.setMap(cur.x, cur.y, mapTile::None); //새 머리가 들어갈 자리는 무조건 비어있음.
 
-    score[0] = snake.len();
+    score[0] = max(snake.len(), score[0]);
     auto done = getDone();
     if(all_of(done.begin(), done.end(), [](bool i){return i;}))
         return gameStatus::Win;
