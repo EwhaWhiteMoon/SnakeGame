@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include <ncurses.h>
-#include <system_error>
 #include <vector>
 #include <chrono>
 #include "game.h"

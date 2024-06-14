@@ -8,7 +8,7 @@
 #include <algorithm>
 
 Game::Game(Stage& S)
-    : snake(S.getMapSize() / 2, S.getMapSize() / 2), stage(S), score(4, 0), direction({-1, 0}), timer(0), itemCnt(2, 0), gateTimer(0)
+    : snake(S.getMapSize() / 2, S.getMapSize() / 2), stage(S), score(4, 0), direction({-1, 0}), timer(0), gateTimer(0)
 {
 }
 
@@ -77,12 +77,10 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
 
         case mapTile::Growth:
             isGrowth = true;
-            itemCnt[0] -= 1;
             score[1] += 1;
             break;
         case mapTile::Poison:
             if(snake.cut() < 3) return gameStatus::Lose;
-            itemCnt[1] -= 1;
             score[2] += 1;
             break;
         case mapTile::None:
@@ -135,25 +133,25 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
 
 void Game::update(){
     //item 등장
-    if(itemCnt[0] <= 3){
+    if(stage.countItem(mapTile::Growth) <= 3){
         int x, y;
         do{
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
-        }while(stage.getMap(x, y) != mapTile::None);
-        stage.setMap(x, y, mapTile::Growth);
-        itemCnt[0] += 1;
+        if(snake.isSnake(x, y)) continue;
+        }while(!stage.addItem(x, y, mapTile::Growth, timer + 5));
     }
 
-    if(itemCnt[1] <= 3){
+    if(stage.countItem(mapTile::Poison) <= 3){
         int x, y;
         do{
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
-        }while(stage.getMap(x, y) != mapTile::None);
-        stage.setMap(x, y, mapTile::Poison);
-        itemCnt[1] += 1;
+        if(snake.isSnake(x, y)) continue;
+        }while(!stage.addItem(x, y, mapTile::Poison, timer + 5));
     }
+
+    stage.itemTick(timer);
     //portal 등장
     if((timer - gateTimer) > 5 && snake.isConnected()){
         int x1, y1, x2, y2;
