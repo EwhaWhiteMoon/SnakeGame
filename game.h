@@ -16,6 +16,7 @@ class Game{
         vector<int> score;
         pair<int, int> direction;
         long long timer;
+        long long last_updated;
         void update();
         static bool checkVaild(mapTile tile);
         static pair<int, int> turnDir(const pair<int, int>& dir, int cnt);

@@ -8,7 +8,9 @@
 #include <algorithm>
 
 Game::Game(Stage& S)
-    : snake(S.getMapSize() / 2, S.getMapSize() / 2), stage(S), score(4, 0), direction({-1, 0}), timer(0), gateTimer(0)
+    : snake(S.getMapSize() / 2, S.getMapSize() / 2), 
+    stage(S), score(4, 0), direction({-1, 0}), 
+    timer(0), gateTimer(0), last_updated(0)
 {
 }
 
@@ -27,7 +29,7 @@ const vector<int>& Game::getPoint(){
 const vector<bool>& Game::getDone(){
     vector<bool> *done = new vector<bool>(4, false);
     for(int i = 0; i < 4; i++){
-        (*done)[i] = stage.getGoal()[i] <= score[i];
+        (*done)[i] = stage.getGoal()[i] <= score[i] or (*done)[i];
     }
     return *done;
 }
@@ -132,6 +134,8 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
 }
 
 void Game::update(){
+    if(last_updated >= timer) return;
+    last_updated = timer;
     //item 등장
     if(stage.countItem(mapTile::Growth) < 3){
         int x, y;
