@@ -22,7 +22,7 @@ class Game{
         int gameSpeed;
 
     public:
-        Game(Stage&, int speed = 500);
+        Game(Stage&, int speed = 200);
         gameStatus tick(pair<int, int> input, long long timestamp);
         const vector<vector<mapTile>>& getEntireMap();
         const vector<point>& getSnake();

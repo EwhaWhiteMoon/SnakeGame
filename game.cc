@@ -136,28 +136,29 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
 void Game::update(){
     if(last_updated >= timer) return;
     last_updated = timer;
+    int itemCnt = ((double)stage.getMapSize() / 20) * 3; // 맵이 크면 아이템도 많아야 함.
     //item 등장
-    if(stage.countItem(mapTile::Growth) < 3){
+    if(stage.countItem(mapTile::Growth) < itemCnt){
         int x, y;
         do{
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
         if(snake.isSnake(x, y)) continue;
-        }while(!stage.addItem(x, y, mapTile::Growth, timer + (5000 / gameSpeed)));
+        }while(!stage.addItem(x, y, mapTile::Growth, timer + 3 + (5000 / gameSpeed)));
     }
 
-    if(stage.countItem(mapTile::Poison) < 3){
+    if(stage.countItem(mapTile::Poison) < (itemCnt + (timer * gameSpeed) / 15000)){ // 15초마다 - 개수 증가
         int x, y;
         do{
         x = rand() % stage.getMapSize();
         y = rand() % stage.getMapSize();
         if(snake.isSnake(x, y)) continue;
-        }while(!stage.addItem(x, y, mapTile::Poison, timer + (5000 / gameSpeed)));
+        }while(!stage.addItem(x, y, mapTile::Poison, timer + 3 + (5000 / gameSpeed)));
     }
 
     stage.itemTick(timer);
     //portal 등장
-    if((timer - gateTimer) > (5000 / gameSpeed) && snake.isConnected()){
+    if((timer - gateTimer) > (10000 / gameSpeed) && snake.isConnected()){
         int x1, y1, x2, y2;
         do{
         x1 = rand() % stage.getMapSize();

@@ -17,3 +17,10 @@ enum class gameStatus : short {
     Lose = 1,
     Win = 2,
 };
+
+enum class menuStatus : short {
+    Main,
+    Playing,
+    Next,
+    End,
+};
