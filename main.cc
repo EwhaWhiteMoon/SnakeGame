@@ -1,90 +1,12 @@
-#include <cstdlib>
 #include <ncurses.h>
 #include <vector>
-#include <chrono>
-#include <fstream>
 #include "game.h"
-#include "stage.h"
 #include "enums.h"
-#include "gameplay.cc"
-#include "menu.cc"
-
-#define screen_height 30
-#define screen_width 90
-
-// 점수 보드를 출력하는 함수
-void displayScoreBoard(WINDOW *scoreWin, Game &game, long long duration, int score)
-{
-    int startY = 1;
-    int startX = 1;
-
-    werase(scoreWin); // Only erase the score window
-    box(scoreWin, 0, 0);
-    mvwprintw(scoreWin, ++startY, startX, "Score Board");
-
-    auto &goals = game.getGoal();
-    auto &points = game.getPoint();
-    auto &done = game.getDone();
-
-    mvwprintw(scoreWin, ++startY, startX, "Score: %5d", score);
-    mvwprintw(scoreWin, ++startY, startX, "Time: %03.02f", ((double)duration / 1000));
-
-    mvwprintw(scoreWin, ++startY, startX, "B: %d / %d", game.getSnake().size(), points[0]);
-    mvwprintw(scoreWin, ++startY, startX, "+: %d", points[1]);
-    mvwprintw(scoreWin, ++startY, startX, "-: %d", points[2]);
-    mvwprintw(scoreWin, ++startY, startX, "G: %d", points[3]);
-
-    startY += 1;
-
-    mvwprintw(scoreWin, ++startY, startX, "Mission");
-    mvwprintw(scoreWin, ++startY, startX, "B: %d (%c)", goals[0], done[0] ? 'v' : ' ');
-    mvwprintw(scoreWin, ++startY, startX, "+: %d (%c)", goals[1], done[1] ? 'v' : ' ');
-    mvwprintw(scoreWin, ++startY, startX, "-: %d (%c)", goals[2], done[2] ? 'v' : ' ');
-    mvwprintw(scoreWin, ++startY, startX, "G: %d (%c)", goals[3], done[3] ? 'v' : ' ');
-
-    wrefresh(scoreWin);
-}
-
-// 시작 메뉴를 출력하는 함수
-void displayStartMenu(WINDOW *menuWin)
-{
-    int startY = 1;
-    int startX = 1;
-
-    box(menuWin, 0, 0);
-    mvwprintw(menuWin, startY, startX, "S : Game Start");
-    mvwprintw(menuWin, startY + 1, startX, "Q : Quit Game");
-
-    wrefresh(menuWin);
-}
-
-// 종료 메뉴를 출력하는 함수
-void displayEndMenu(WINDOW *menuWin, int score)
-{
-    int startY = 1;
-    int startX = 1;
-
-    box(menuWin, 0, 0);
-    if (score > 0)
-    {
-        mvwprintw(menuWin, ++startY, startX, "Stage Complete!");
-        mvwprintw(menuWin, ++startY, startX, "Score : %04d", score);
-    }
-    else
-        mvwprintw(menuWin, ++startY, startX, "Game Over!");
-
-    startY += 1;
-    mvwprintw(menuWin, ++startY, startX, "M : Go to Start Menu");
-    if (score > 0)
-        mvwprintw(menuWin, ++startY, startX, "N : Go to Next Stage");
-    if (score <= 0)
-        mvwprintw(menuWin, ++startY, startX, "R : Retry This Stage");
-    mvwprintw(menuWin, ++startY, startX, "Q : Quit");
-
-    wrefresh(menuWin);
-}
+#include "menu.h"
+#include "renderer.h"
 
 void init();
+int gamePlay(string StageName, int speed);
 
 int main()
 {
@@ -148,4 +70,75 @@ void init()
     // 키패드 활성화
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE); // getch가 non-blocking으로 실행되도록 함
+}
+
+int gamePlay(string StageName, int speed)
+{
+    // 게임 초기화
+    Stage stage(StageName); // 스테이지 파일 경로
+    Game game(stage, speed);
+
+    // 지도와 점수 보드를 위한 창 생성
+    int mapSize = stage.getMapSize();
+    int scoreBoardWidth = 20;
+    WINDOW *mapWin = newwin(mapSize, mapSize, 0, 0);
+    WINDOW *scoreWin = newwin(mapSize, scoreBoardWidth, 0, mapSize);
+
+    // 시작 전 화면 정리
+    erase();
+    refresh();
+
+    // 메인 게임 루프
+    bool gameRunning = true;
+    auto lastTick = std::chrono::steady_clock::now();
+
+    // rand 초기화
+    srand((unsigned int)lastTick.time_since_epoch().count());
+
+    while (true)
+    {
+        // 입력 처리
+        int ch = getch();
+        int dx = 0, dy = 0;
+        switch (ch)
+        {
+        case KEY_UP:
+            dy = -1;
+            break;
+        case KEY_DOWN:
+            dy = 1;
+            break;
+        case KEY_LEFT:
+            dx = -1;
+            break;
+        case KEY_RIGHT:
+            dx = 1;
+            break;
+        case 'q':
+            gameRunning = false;
+            break;
+        }
+
+        auto now = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTick).count();
+        gameStatus status = game.tick({dy, dx}, duration);
+        auto scores = game.getPoint();
+        int score = scores[0] * 5 + scores[1] + scores[2] + scores[3] * 3 + (duration / 1000);
+
+        // 게임 상태 확인
+        if (status != gameStatus::Progress or !gameRunning)
+        {
+            werase(mapWin);
+            werase(scoreWin);
+            wrefresh(mapWin);
+            wrefresh(scoreWin);
+            delwin(mapWin);
+            delwin(scoreWin);
+
+            return status == gameStatus::Win ? score : -1;
+        }
+
+        renderGame(mapWin, game, mapSize);
+        renderScoreBoard(scoreWin, game, duration, score);
+    }
 }

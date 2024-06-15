@@ -6,7 +6,45 @@
 #include "game.h"
 #include "stage.h"
 #include "enums.h"
-#include "gameplay.cc"
+
+// 시작 메뉴를 출력하는 함수
+void displayStartMenu(WINDOW *menuWin)
+{
+    int startY = 1;
+    int startX = 1;
+
+    box(menuWin, 0, 0);
+    mvwprintw(menuWin, startY, startX, "S : Game Start");
+    mvwprintw(menuWin, startY + 1, startX, "Q : Quit Game");
+
+    wrefresh(menuWin);
+}
+
+// 종료 메뉴를 출력하는 함수
+void displayEndMenu(WINDOW *menuWin, int score)
+{
+    int startY = 1;
+    int startX = 1;
+
+    box(menuWin, 0, 0);
+    if (score > 0)
+    {
+        mvwprintw(menuWin, ++startY, startX, "Stage Complete!");
+        mvwprintw(menuWin, ++startY, startX, "Score : %04d", score);
+    }
+    else
+        mvwprintw(menuWin, ++startY, startX, "Game Over!");
+
+    startY += 1;
+    mvwprintw(menuWin, ++startY, startX, "M : Go to Start Menu");
+    if (score > 0)
+        mvwprintw(menuWin, ++startY, startX, "N : Go to Next Stage");
+    if (score <= 0)
+        mvwprintw(menuWin, ++startY, startX, "R : Retry This Stage");
+    mvwprintw(menuWin, ++startY, startX, "Q : Quit");
+
+    wrefresh(menuWin);
+}
 
 menuStatus mainMenu()
 {

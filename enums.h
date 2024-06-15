@@ -1,5 +1,8 @@
 #pragma once
 
+#define screen_height 30
+#define screen_width 90
+
 enum class mapTile : short {
     inVaild = -1, // 잘못된 위치를 참조하였을 경우.
     None = 0,
