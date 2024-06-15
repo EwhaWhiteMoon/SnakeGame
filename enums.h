@@ -21,6 +21,7 @@ enum class gameStatus : short {
 enum class menuStatus : short {
     Main,
     Playing,
-    Next,
+    Over,
     End,
+    Next,
 };

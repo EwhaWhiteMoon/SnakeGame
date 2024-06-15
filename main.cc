@@ -65,6 +65,8 @@ void displayEndMenu(WINDOW *menuWin, gameStatus status)
     mvwprintw(menuWin, startY + 2, startX, "M : Go to Start Menu");
     if (status == gameStatus::Win)
         mvwprintw(menuWin, startY + 2, startX, "N : Go to Next Stage");
+    if (status != gameStatus::Win)
+        mvwprintw(menuWin, startY + 2, startX, "R : Retry This Stage");
     mvwprintw(menuWin, startY + 3, startX, "Q : Quit");
 
     wrefresh(menuWin);
@@ -72,7 +74,7 @@ void displayEndMenu(WINDOW *menuWin, gameStatus status)
 
 void init();
 menuStatus mainMenu();
-menuStatus gamePlay(string StageName, int speed);
+gameStatus gamePlay(string StageName, int speed);
 menuStatus gameOver(gameStatus status);
 menuStatus gameClear();
 
@@ -87,16 +89,19 @@ int main()
 
     while (curMenu != menuStatus::End)
     {
-        if (curMenu == menuStatus::Main)
-            curMenu = mainMenu();
-        if (curMenu == menuStatus::Playing)
-            curMenu = gamePlay(stageList[curStage], 350 - curStage * 30);
-        if (curMenu == menuStatus::Next){
+        if (curMenu == menuStatus::Main) curMenu = mainMenu();
+        if (curMenu == menuStatus::Playing){
+            gameStatus status = gamePlay(stageList[curStage], 350 - curStage * 30);
+            if(curStage == stageList.size()){
+                curMenu = gameClear();
+                continue;
+            }
+            curMenu = gameOver(status);
+        }
+        if(curMenu == menuStatus::Next){
             curStage ++;
             curMenu = menuStatus::Playing;
         }
-        if (curStage == stageList.size())
-            curMenu = gameClear();
     }
     endwin();
     return 0;
@@ -153,7 +158,7 @@ menuStatus mainMenu()
     }
 }
 
-menuStatus gamePlay(string StageName, int speed)
+gameStatus gamePlay(string StageName, int speed)
 {
     // 게임 초기화
     Stage stage(StageName); // 스테이지 파일 경로
@@ -214,7 +219,7 @@ menuStatus gamePlay(string StageName, int speed)
             wrefresh(scoreWin);
             delwin(mapWin);
             delwin(scoreWin);
-            return gameOver(status);
+            return status;
         }
 
         // 지도 렌더링
@@ -266,9 +271,11 @@ menuStatus gamePlay(string StageName, int speed)
         for (auto i : game.getSnake())
         {
             wattron(mapWin, COLOR_PAIR(1));
-            mvwprintw(mapWin, i.x, i.y, "@");
+            mvwprintw(mapWin, i.x, i.y, "O");
             wattroff(mapWin, COLOR_PAIR(1));
         }
+
+        mvwprintw(mapWin, game.getSnake().back().x, game.getSnake().back().y, "@");
         wrefresh(mapWin);
 
         // 점수 보드 렌더링
@@ -306,6 +313,14 @@ menuStatus gameOver(gameStatus status)
             wrefresh(menuWin);
             delwin(menuWin);
             return menuStatus::Next;
+        case 'R':
+        case 'r':
+            if (status == gameStatus::Win)
+                break;
+            werase(menuWin);
+            wrefresh(menuWin);
+            delwin(menuWin);
+            return menuStatus::Playing;
         }
     }
 }
