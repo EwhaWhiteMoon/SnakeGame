@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <vector>
 #include <chrono>
+#include <fstream>
 #include "game.h"
 #include "stage.h"
 #include "enums.h"
@@ -10,29 +11,34 @@
 #define screen_width 90
 
 // 점수 보드를 출력하는 함수
-void displayScoreBoard(WINDOW *scoreWin, Game &game)
+void displayScoreBoard(WINDOW *scoreWin, Game &game, long long duration, int score)
 {
     int startY = 1;
     int startX = 1;
 
     werase(scoreWin); // Only erase the score window
     box(scoreWin, 0, 0);
-    mvwprintw(scoreWin, startY, startX, "Score Board");
+    mvwprintw(scoreWin, ++startY, startX, "Score Board");
 
     auto &goals = game.getGoal();
     auto &points = game.getPoint();
     auto &done = game.getDone();
 
-    mvwprintw(scoreWin, startY + 2, startX, "B: %d / %d", game.getSnake().size(), points[0]);
-    mvwprintw(scoreWin, startY + 3, startX, "+: %d", points[1]);
-    mvwprintw(scoreWin, startY + 4, startX, "-: %d", points[2]);
-    mvwprintw(scoreWin, startY + 5, startX, "G: %d", points[3]);
+    mvwprintw(scoreWin, ++startY, startX, "Score: %5d", score);
+    mvwprintw(scoreWin, ++startY, startX, "Time: %03.02f", ((double)duration / 1000));
 
-    mvwprintw(scoreWin, startY + 7, startX, "Mission");
-    mvwprintw(scoreWin, startY + 8, startX, "B: %d (%c)", goals[0], done[0] ? 'v' : ' ');
-    mvwprintw(scoreWin, startY + 9, startX, "+: %d (%c)", goals[1], done[1] ? 'v' : ' ');
-    mvwprintw(scoreWin, startY + 10, startX, "-: %d (%c)", goals[2], done[2] ? 'v' : ' ');
-    mvwprintw(scoreWin, startY + 11, startX, "G: %d (%c)", goals[3], done[3] ? 'v' : ' ');
+    mvwprintw(scoreWin, ++startY, startX, "B: %d / %d", game.getSnake().size(), points[0]);
+    mvwprintw(scoreWin, ++startY, startX, "+: %d", points[1]);
+    mvwprintw(scoreWin, ++startY, startX, "-: %d", points[2]);
+    mvwprintw(scoreWin, ++startY, startX, "G: %d", points[3]);
+
+    startY += 1;
+
+    mvwprintw(scoreWin, ++startY, startX, "Mission");
+    mvwprintw(scoreWin, ++startY, startX, "B: %d (%c)", goals[0], done[0] ? 'v' : ' ');
+    mvwprintw(scoreWin, ++startY, startX, "+: %d (%c)", goals[1], done[1] ? 'v' : ' ');
+    mvwprintw(scoreWin, ++startY, startX, "-: %d (%c)", goals[2], done[2] ? 'v' : ' ');
+    mvwprintw(scoreWin, ++startY, startX, "G: %d (%c)", goals[3], done[3] ? 'v' : ' ');
 
     wrefresh(scoreWin);
 }
@@ -51,32 +57,36 @@ void displayStartMenu(WINDOW *menuWin)
 }
 
 // 종료 메뉴를 출력하는 함수
-void displayEndMenu(WINDOW *menuWin, gameStatus status)
+void displayEndMenu(WINDOW *menuWin, int score)
 {
     int startY = 1;
     int startX = 1;
 
     box(menuWin, 0, 0);
-    if (status == gameStatus::Win)
-        mvwprintw(menuWin, startY, startX, "Stage Complete!");
+    if (score > 0)
+    {
+        mvwprintw(menuWin, ++startY, startX, "Stage Complete!");
+        mvwprintw(menuWin, ++startY, startX, "Score : %04d", score);
+    }
     else
-        mvwprintw(menuWin, startY, startX, "Game Over!");
+        mvwprintw(menuWin, ++startY, startX, "Game Over!");
 
-    mvwprintw(menuWin, startY + 2, startX, "M : Go to Start Menu");
-    if (status == gameStatus::Win)
-        mvwprintw(menuWin, startY + 2, startX, "N : Go to Next Stage");
-    if (status != gameStatus::Win)
-        mvwprintw(menuWin, startY + 2, startX, "R : Retry This Stage");
-    mvwprintw(menuWin, startY + 3, startX, "Q : Quit");
+    startY += 1;
+    mvwprintw(menuWin, ++startY, startX, "M : Go to Start Menu");
+    if (score > 0)
+        mvwprintw(menuWin, ++startY, startX, "N : Go to Next Stage");
+    if (score <= 0)
+        mvwprintw(menuWin, ++startY, startX, "R : Retry This Stage");
+    mvwprintw(menuWin, ++startY, startX, "Q : Quit");
 
     wrefresh(menuWin);
 }
 
 void init();
 menuStatus mainMenu();
-gameStatus gamePlay(string StageName, int speed);
-menuStatus gameOver(gameStatus status);
-menuStatus gameClear();
+int gamePlay(string StageName, int speed);
+menuStatus gameOver(int score);
+menuStatus gameClear(vector<int> scores);
 
 int main()
 {
@@ -85,21 +95,26 @@ int main()
     menuStatus curMenu = menuStatus::Main;
     int curStage = 0;
     vector<string> stageList({"blankmap.txt", "largemap.txt", "largemap2.txt", "testmap.txt"});
-
+    vector<int> scores(stageList.size(), 0);
 
     while (curMenu != menuStatus::End)
     {
-        if (curMenu == menuStatus::Main) curMenu = mainMenu();
-        if (curMenu == menuStatus::Playing){
-            gameStatus status = gamePlay(stageList[curStage], 350 - curStage * 30);
-            if(curStage == stageList.size()){
-                curMenu = gameClear();
+        if (curMenu == menuStatus::Main)
+            curMenu = mainMenu();
+        if (curMenu == menuStatus::Playing)
+        {
+            int score = gamePlay(stageList[curStage], 350 - curStage * 30);
+            scores[curStage] = score;
+            if (curStage == stageList.size() - 1 and score > 0)
+            {
+                curMenu = gameClear(scores);
                 continue;
             }
-            curMenu = gameOver(status);
+            curMenu = gameOver(score);
         }
-        if(curMenu == menuStatus::Next){
-            curStage ++;
+        if (curMenu == menuStatus::Next)
+        {
+            curStage++;
             curMenu = menuStatus::Playing;
         }
     }
@@ -158,7 +173,7 @@ menuStatus mainMenu()
     }
 }
 
-gameStatus gamePlay(string StageName, int speed)
+int gamePlay(string StageName, int speed)
 {
     // 게임 초기화
     Stage stage(StageName); // 스테이지 파일 경로
@@ -209,6 +224,8 @@ gameStatus gamePlay(string StageName, int speed)
         auto now = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTick).count();
         gameStatus status = game.tick({dy, dx}, duration);
+        auto scores = game.getPoint();
+        int score = scores[0] * 5 + scores[1] + scores[2] + scores[3] * 3 + (duration / 1000);
 
         // 게임 상태 확인
         if (status != gameStatus::Progress or !gameRunning)
@@ -219,7 +236,8 @@ gameStatus gamePlay(string StageName, int speed)
             wrefresh(scoreWin);
             delwin(mapWin);
             delwin(scoreWin);
-            return status;
+
+            return status == gameStatus::Win ? score : -1;
         }
 
         // 지도 렌더링
@@ -279,17 +297,17 @@ gameStatus gamePlay(string StageName, int speed)
         wrefresh(mapWin);
 
         // 점수 보드 렌더링
-        displayScoreBoard(scoreWin, game);
+        displayScoreBoard(scoreWin, game, duration, score);
     }
 }
 
-menuStatus gameOver(gameStatus status)
+menuStatus gameOver(int score)
 {
     // 종료 메뉴 출력
     WINDOW *menuWin = newwin(10, 30, screen_height / 2 - 5, screen_width / 2 - 15);
     while (true)
     {
-        displayEndMenu(menuWin, status);
+        displayEndMenu(menuWin, score);
         int ch = getch();
         switch (ch)
         {
@@ -307,7 +325,7 @@ menuStatus gameOver(gameStatus status)
             return menuStatus::End;
         case 'N':
         case 'n':
-            if (status != gameStatus::Win)
+            if (score <= 0)
                 break;
             werase(menuWin);
             wrefresh(menuWin);
@@ -315,7 +333,7 @@ menuStatus gameOver(gameStatus status)
             return menuStatus::Next;
         case 'R':
         case 'r':
-            if (status == gameStatus::Win)
+            if (score > 0)
                 break;
             werase(menuWin);
             wrefresh(menuWin);
@@ -325,13 +343,36 @@ menuStatus gameOver(gameStatus status)
     }
 }
 
-menuStatus gameClear()
+menuStatus gameClear(vector<int> scores)
 {
-    WINDOW *menuWin = newwin(6, 22, screen_height / 2 - 3, screen_width / 2 - 10);
+
+    int score = 0;
+    for (int i : scores)
+        score += i;
+    
+    int best;
+    ifstream bs("bestscore");
+    bs >> best;
+    bs.close();
+
+    if(best < score){
+        ofstream bso("bestscore");
+        bso << score;
+        bso.close();
+    }
+
+    WINDOW *menuWin = newwin(10, 22, screen_height / 2 - 5, screen_width / 2 - 10);
     box(menuWin, 0, 0);
-    while (getch() == ERR){
+
+    while (getch() == ERR)
+    {
         mvwprintw(menuWin, 2, 1, "   YOU WIN!!!!!!   ");
         mvwprintw(menuWin, 3, 1, "   PRESS ANY KEY   ");
+
+        mvwprintw(menuWin, 6, 1, "  SCORE  : %6d  ", score);
+        mvwprintw(menuWin, 7, 1, "LAST BEST: %6d  ", best);
+        if(best <= score) 
+            mvwprintw(menuWin, 8, 1, "   NEW BEST!!!!!   ");
         wrefresh(menuWin);
     };
 
