@@ -6,6 +6,6 @@
 
 void displayStartMenu(WINDOW *menuWin);
 void displayEndMenu(WINDOW *menuWin, int score);
-menuStatus mainMenu();
+menuStatus mainMenu(bool isFirstRun);
 menuStatus gameOver(int score);
 menuStatus gameClear(vector<int> scores);

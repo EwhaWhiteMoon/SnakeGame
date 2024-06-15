@@ -14,13 +14,16 @@ int main()
 
     menuStatus curMenu = menuStatus::Main;
     int curStage = 0;
+    bool isFirstRun = true;
     vector<string> stageList({"blankmap.txt", "largemap.txt", "largemap2.txt", "testmap.txt"});
     vector<int> scores(stageList.size(), 0);
 
     while (curMenu != menuStatus::End)
     {
-        if (curMenu == menuStatus::Main)
-            curMenu = mainMenu();
+        if (curMenu == menuStatus::Main){
+            curMenu = mainMenu(isFirstRun);
+            isFirstRun = false;
+        }
         if (curMenu == menuStatus::Playing)
         {
             int score = gamePlay(stageList[curStage], 350 - curStage * 30);

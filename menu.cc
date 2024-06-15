@@ -28,14 +28,15 @@ void displayGameRule(WINDOW *ruleWin)
 
     box(ruleWin, 0, 0);
 
-    mvwprintw(ruleWin, startY, startX, "------------- GAME RULE ------------");
-    mvwprintw(ruleWin, startY + 2, startX, "1. Use arrow keys to move the snake.");
-    mvwprintw(ruleWin, startY + 3, startX, "2. Eat '+' to grow by 1.");
-    mvwprintw(ruleWin, startY + 4, startX, "3. Eat '-' to shrink by 1.");
-    mvwprintw(ruleWin, startY + 5, startX, "4. 'G' items are Gates.");
-    mvwprintw(ruleWin, startY + 6, startX, "5. Complete all missions to clear the stage.");
-    mvwprintw(ruleWin, startY + 7, startX, "6. Clear all 4 stages to win the game.");
-    mvwprintw(ruleWin, startY + 9, startX, "Press any key to start the game");
+    mvwprintw(ruleWin, ++startY, startX, "------------- GAME RULE ------------");
+    mvwprintw(ruleWin, ++startY, startX, "1. Use arrow keys to move the snake.");
+    mvwprintw(ruleWin, ++startY, startX, "2. Eat '+' to grow by 1.");
+    mvwprintw(ruleWin, ++startY, startX, "3. Eat '-' to shrink by 1.");
+    mvwprintw(ruleWin, ++startY, startX, "4. Game over when length < 3");
+    mvwprintw(ruleWin, ++startY, startX, "5. 'G' are Gates.");
+    mvwprintw(ruleWin, ++startY, startX, "6. Complete all missions to clear the stage.");
+    mvwprintw(ruleWin, ++startY, startX, "7. Clear all 4 stages to win the game.");
+    mvwprintw(ruleWin, ++startY, startX, "Press any key to start the game");
 
     wrefresh(ruleWin);
 }
@@ -66,10 +67,20 @@ void displayEndMenu(WINDOW *menuWin, int score)
     wrefresh(menuWin);
 }
 
-menuStatus mainMenu()
+void showRule()
+{
+    WINDOW *ruleWin = newwin(15, 50, screen_height / 2 - 7, screen_width / 2 - 25);
+    while (getch() == ERR)
+        displayGameRule(ruleWin);
+
+    werase(ruleWin);
+    wrefresh(ruleWin);
+    delwin(ruleWin);
+}
+
+menuStatus mainMenu(bool isFirstRun)
 {
     WINDOW *menuWin = newwin(5, 30, screen_height / 2 - 3, screen_width / 2 - 15);
-    WINDOW *ruleWin = newwin(15, 50, screen_height / 2 - 7, screen_width / 2 - 25);
 
     while (true)
     {
@@ -80,15 +91,8 @@ menuStatus mainMenu()
         case 'S':
         case 's':
             delwin(menuWin);
-
             // 게임 규칙 출력
-
-            displayGameRule(ruleWin);
-            getch();
-
-            werase(ruleWin);
-            wrefresh(ruleWin);
-            delwin(ruleWin);
+            if(isFirstRun) showRule();
             return menuStatus::Playing;
         case 'Q':
         case 'q':
