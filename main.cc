@@ -54,17 +54,17 @@ void init()
     if (has_colors())
     {
         start_color();
-        init_color(COLOR_CYAN, 700, 933, 933);    // #afeee
+        init_color(COLOR_BLUE, 700, 933, 933);    // #afeeee
         init_color(COLOR_GREEN, 678, 1000, 184);  // #adff2f
         init_color(COLOR_MAGENTA, 576, 439, 859); // #9370db
         init_color(COLOR_RED, 1000, 714, 757);    // #ffb6c1
-        init_color(COLOR_BLUE, 753, 753, 753);    // #c0c0c0
+        init_color(COLOR_WHITE, 753, 753, 753);   // #c0c0c0
 
-        init_pair(1, COLOR_CYAN, COLOR_BLACK);    // @
+        init_pair(1, COLOR_BLUE, COLOR_BLACK);    // O
         init_pair(2, COLOR_GREEN, COLOR_BLACK);   // A
         init_pair(3, COLOR_MAGENTA, COLOR_BLACK); // +
         init_pair(4, COLOR_RED, COLOR_BLACK);     // -
-        init_pair(5, COLOR_BLUE, COLOR_BLACK);    // #
+        init_pair(5, COLOR_WHITE, COLOR_BLACK);   // #
     }
 
     // 키패드 활성화
