@@ -7,7 +7,7 @@ void renderScoreBoard(WINDOW *scoreWin, Game &game, long long duration, int scor
     int startY = 1;
     int startX = 1;
 
-    werase(scoreWin); // Only erase the score window
+    werase(scoreWin);
     box(scoreWin, 0, 0);
     mvwprintw(scoreWin, ++startY, startX, "Score Board");
 
@@ -34,6 +34,7 @@ void renderScoreBoard(WINDOW *scoreWin, Game &game, long long duration, int scor
     wrefresh(scoreWin);
 }
 
+// 게임을 그리는 함수
 void renderGame(WINDOW *mapWin, Game &game, int mapSize)
 {
     werase(mapWin);
@@ -72,7 +73,7 @@ void renderGame(WINDOW *mapWin, Game &game, int mapSize)
                 break;
             case mapTile::Portal:
                 wattron(mapWin, COLOR_PAIR(2));
-                mvwprintw(mapWin, y, x, "A");
+                mvwprintw(mapWin, y, x, "G");
                 wattroff(mapWin, COLOR_PAIR(2));
                 break;
             case mapTile::inVaild:
