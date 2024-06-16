@@ -53,6 +53,11 @@ int Snake::cut()
     return len();
 }
 
+void Snake::doubleLen()
+{
+    length *= 2;
+}
+
 bool Snake::isConnected()
 {
     point cur = getTail();

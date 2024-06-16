@@ -1,7 +1,6 @@
 #pragma once
 #include "point.h"
 #include "enums.h"
-#include <algorithm>
 #include <vector>
 
 using namespace std;

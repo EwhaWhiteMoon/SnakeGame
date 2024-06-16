@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <vector>
+#include <chrono>
 #include "game.h"
 #include "enums.h"
 #include "menu.h"

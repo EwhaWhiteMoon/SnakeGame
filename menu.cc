@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <ncurses.h>
 #include <vector>
-#include <chrono>
 #include <fstream>
 #include "game.h"
 #include "stage.h"
@@ -36,6 +35,7 @@ void displayGameRule(WINDOW *ruleWin)
     mvwprintw(ruleWin, ++startY, startX, "5. 'G' are Gates.");
     mvwprintw(ruleWin, ++startY, startX, "6. Complete all missions to clear the stage.");
     mvwprintw(ruleWin, ++startY, startX, "7. Clear all 4 stages to win the game.");
+    mvwprintw(ruleWin, ++startY, startX, "8. $ = length * 2");
     mvwprintw(ruleWin, ++startY, startX, "Press any key to start the game");
 
     wrefresh(ruleWin);

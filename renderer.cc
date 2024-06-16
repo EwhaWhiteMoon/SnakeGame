@@ -76,6 +76,11 @@ void renderGame(WINDOW *mapWin, Game &game, int mapSize)
                 mvwprintw(mapWin, y, x, "G");
                 wattroff(mapWin, COLOR_PAIR(2));
                 break;
+            case mapTile::Super:
+                wattron(mapWin, COLOR_PAIR(2));
+                mvwprintw(mapWin, y, x, "$");
+                wattroff(mapWin, COLOR_PAIR(2));
+                break;
             case mapTile::inVaild:
                 mvwprintw(mapWin, y, x, "X");
             }

@@ -11,6 +11,7 @@ enum class mapTile : short {
     Growth = 3,
     Poison = 4,
     Portal = 5,
+    Super = 6,
     Snake = 99,
 };
 

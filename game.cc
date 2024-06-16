@@ -5,7 +5,6 @@
 #include <optional>
 #include <cstdlib>
 #include <vector>
-#include <algorithm>
 
 Game::Game(Stage& S, int speed)
     : snake(S.getMapSize() / 2, S.getMapSize() / 2), 
@@ -86,6 +85,9 @@ gameStatus Game::tick(pair<int, int> input, long long timestamp){
             score[2] += 1;
             break;
         case mapTile::None:
+            break;
+        case mapTile::Super:
+            snake.doubleLen();
             break;
 
         case mapTile::Portal:{
@@ -170,5 +172,14 @@ void Game::update(){
 
         stage.createGate(x1, y1, x2, y2);
         gateTimer = timer;
+    }
+
+    if(stage.countItem(mapTile::Super) < 1 && timer > (20000 / gameSpeed) && timer < (30000 / gameSpeed)){
+        int x, y;
+        do{
+        x = rand() % stage.getMapSize();
+        y = rand() % stage.getMapSize();
+        if(snake.isSnake(x, y)) continue;
+        }while(!stage.addItem(x, y, mapTile::Super, timer + (15000 / gameSpeed)));
     }
 }

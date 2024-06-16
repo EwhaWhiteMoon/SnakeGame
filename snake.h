@@ -17,6 +17,7 @@ class Snake{
         int len();
         int moveTo(int x, int y, bool isGrowth);
         int cut();
+        void doubleLen();
         bool isConnected();
     private:
         deque<point> body;
